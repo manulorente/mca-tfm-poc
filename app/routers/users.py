@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from httpx import Response
 
 router = APIRouter()
 

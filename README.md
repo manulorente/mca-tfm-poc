@@ -44,3 +44,15 @@ pip install -r requirements.txt
 ```bash
 pytest
 ```  
+
+## Build Docker image
+
+```bash
+docker build -t mca-tfm-pco .
+```
+
+## Run Docker compose
+
+```bash
+docker-compose up -d
+```
