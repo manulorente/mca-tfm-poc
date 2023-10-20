@@ -13,32 +13,33 @@ local-setup:  ## Set up the local environment installing git hooks.
 .PHONY: build
 build:  ## Build the app.
 	@echo "Building the app."
-	docker build .
-
-.PHONY: install
-install:  ## Install the app.
-	@echo "Installing the app."
-	poetry install
+	docker build --no-cache -t app .
 
 .PHONY: update
 update:  ## Update the app.
 	@echo "Updating the app."
-	poetry update
+	docker compose run --rm --no-deps app poetry update
 
-.PHONY: up
-up:  ## Start the app.
-	@echo "Starting the app."
-	docker-compose up --build app
+.PHONY: install
+install:  ## Install a new package in the app. ex: make install package_name
+	@echo "Installing a new package in the app."
+	docker compose run --rm --no-deps app poetry add $1@latest
+	docker build --no-cache -t app .
 
-.PHONY: down
-down:  ## Stop the app.
-	@echo "Stopping the app."
-	docker-compose down -v --remove-orphans
+.PHONY: run
+run:  ## Run the app.
+	@echo "Running the app."
+	docker compose run --rm --no-deps app
+
+.PHONY: clean
+clean:  ## Clean the app.
+	@echo "Cleaning the app."
+	docker compose down --rmi all --volumes --remove-orphans
 
 .PHONY: dev
 dev:  ## Start the app in development mode.
 	@echo "Starting the app in development mode."
-	poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+	docker compose run --rm --no-deps app poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
 
 .PHONY: check-typing
 check-typing:  ## Check the typing.
