@@ -3,6 +3,7 @@ import secrets
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     APP_NAME: str = f"{os.environ.get('APP_NAME', 'demo').capitalize()} API"
     DESCRIPTION: str = os.environ.get("DESCRIPTION", "")
@@ -13,7 +14,9 @@ class Settings(BaseSettings):
     DOC_URL: str = os.environ.get("DOC_URL", "")
     DATABASE_URL: str = os.environ.get("DATABASE_URL", "")
     REDIS_URL: str = os.environ.get("REDIS_URL", "")
-    model_config = SettingsConfigDict(env_file="../.env", env_file_encoding='utf-8')
+    model_config = SettingsConfigDict(env_file="../../.env",
+                                      env_file_encoding='utf-8')
+
 
 def get_settings():
     return Settings()

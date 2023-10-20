@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "mca-tfm-pco"
+version = "0.1.0"
+description = ""
+authors = ["manu <manloralm@outlook.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4.2"
+yapf = "^0.40.2"
+mypy = "^1.6.1"
+ruff = "^0.1.1"
+fastapi = "^0.104.0"
+flake8 = "^6.1.0"
+pytest-xdist = "^3.3.1"
+doublex = "^1.9.6"
+pylint = "^3.0.1"
+expects = "^0.9.0"
+doublex-expects = "^0.7.1"
+requests = "^2.31.0"
+httpx = "^0.25.0"
+uvicorn = "^0.23.2"
+pydantic = "^2.4.2"
+pydantic-settings = "^2.0.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

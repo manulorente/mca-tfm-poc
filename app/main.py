@@ -26,4 +26,3 @@ logger.info(f"Application environment: {settings.ENV}")
 logger.info(f"Application prefix: {settings.PREFIX}")
 logger.info(f"Application docs url: {settings.DOC_URL}")
 logger.info(f"Application description: {settings.DESCRIPTION}")
-
