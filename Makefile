@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := help
 
+APP_NAME := demo
+
 .PHONY: help
 help:  ## Show this help.
 	@grep -E '^\S+:.*?## .*$$' $(firstword $(MAKEFILE_LIST)) | \
@@ -12,24 +14,13 @@ local-setup:  ## Set up the local environment installing git hooks.
 
 .PHONY: build
 build:  ## Build the app.
-	@echo "Building the app."
-	docker build --no-cache -t app .
+	@echo "Building the app $(APP_NAME)."
+	docker build . --no-cache -t $(APP_NAME)
 
 .PHONY: update
 update:  ## Update the app.
 	@echo "Updating the app."
-	docker compose run --rm --no-deps app poetry update
-
-.PHONY: install
-install:  ## Install a new package in the app. ex: make install package_name
-	@echo "Installing a new package in the app."
-	docker compose run --rm --no-deps app poetry add $1@latest
-	docker build --no-cache -t app .
-
-.PHONY: run
-run:  ## Run the app.
-	@echo "Running the app."
-	docker compose run --rm --no-deps app
+	docker compose run --rm --no-deps $(APP_NAME) poetry update
 
 .PHONY: clean
 clean:  ## Clean the app.
@@ -39,43 +30,49 @@ clean:  ## Clean the app.
 .PHONY: dev
 dev:  ## Start the app in development mode.
 	@echo "Starting the app in development mode."
-	docker compose run --rm --no-deps app poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+	docker compose run --rm --no-deps $(APP_NAME) poetry run uvicorn src.main:app --reload --host 0.0.0.0 --port 8080
+
+.PHONY: install
+install:  ## Install a new package in the app. ex: make install PKG=package_name
+	@echo "Installing a package $(PKG) in the app."
+	docker compose run --rm --no-deps $(APP_NAME) poetry add $(PKG)@latest
+	docker build . --no-cache -t $(APP_NAME)
 
 .PHONY: check-typing
 check-typing:  ## Check the typing.
 	@echo "Checking the typing."
-	poetry run mypy .
+	docker compose run --rm --no-deps $(APP_NAME) poetry run mypy .
 
 .PHONY: check-format
 check-format:  ## Check the formatting.
 	@echo "Checking the formatting."
-	poetry run yapf --diff --recursive app/**/*.py
+	docker compose run --rm --no-deps $(APP_NAME) poetry run yapf --diff --recursive src/**/*.py
 
 .PHONY: check-style
 check-style:  ## Check the styling.
 	@echo "Checking the styling."
-	poetry run flake8 app/
-	poetry run pylint app/**
+	docker compose run --rm --no-deps $(APP_NAME) poetry run flake8 .
+	docker compose run --rm --no-deps $(APP_NAME) poetry run pylint ./**
 	
 .PHONY: reformat
 reformat:  ## Reformat the code.
 	@echo "Reformatting the code."
-	poetry run yapf --parallel --recursive -ir app/
+	docker compose run --rm --no-deps $(APP_NAME) poetry run yapf --parallel --recursive -ir .
 
 .PHONY: test-unit
 test-unit:  ## Run the unit tests.
 	@echo "Running the unit tests."
-	docker-compose run --rm --no-deps app poetry run pytest -n tests/unit -ra 
+	docker compose run --rm --no-deps $(APP_NAME) poetry run pytest -n 4 tests/unit -ra 
 
 .PHONY: test-integration
 test-integration:  ## Run the integration tests.
 	@echo "Running the integration tests."
-	docker-compose run --rm app poetry run pytest -n tests/integration -ra
+	docker compose run --rm --no-deps $(APP_NAME) poetry run pytest -n tests/integration -ra
 
 .PHONY: test-acceptance
 test-acceptance:  ## Run the acceptance tests.
 	@echo "Running the acceptance tests."
-	docker-compose run --rm app poetry run pytest -n auto tests/acceptance -ra
+	docker compose run --rm --no-deps $(APP_NAME) poetry run pytest -n auto tests/acceptance -ra
 
 .PHONY: test
 test:  ## Run the unit, integration and acceptance tests.

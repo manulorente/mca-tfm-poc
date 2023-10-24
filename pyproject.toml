@@ -6,6 +6,7 @@ authors = ["manu <manloralm@outlook.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+uvicorn = "^0.23.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.2"
