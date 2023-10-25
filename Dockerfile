@@ -1,17 +1,15 @@
-FROM python:3.11.5
+FROM python:3.11.5-alpine
+
+RUN apk update --no-cache && apk upgrade --no-cache --available
 
 WORKDIR /src
 
-COPY ./pyproject.toml /src
+COPY ./pyproject.toml /src/
 
-RUN apt-get update \
-    && apt-get clean
+RUN pip install --upgrade pip && pip install poetry
 
-RUN pip install --upgrade pip \
-    && pip install poetry
+COPY . /src/
 
-RUN poetry install
+RUN chmod +x /src/scripts/entrypoint.sh && poetry install
 
-COPY . /src
-
-CMD ["poetry", "run", "uvicorn", "demo.main:app", "--reload", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["/src/scripts/entrypoint.sh"]
