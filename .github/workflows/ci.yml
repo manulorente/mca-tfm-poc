@@ -51,6 +51,9 @@ jobs:
             set +a
       - name: Tag Docker image with the next release candidate
         run: |
+          set -a
+          [ -f app/.env ] && . app/.env
+          set +a
           echo "IMAGE_NAME >> $IMAGE_NAME"
           REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
           echo "REPOSITORY >> $REPOSITORY"
