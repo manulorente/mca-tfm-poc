@@ -55,7 +55,7 @@ jobs:
           [ -f app/.env ] && . app/.env
           set +a
           echo "IMAGE_NAME >> $IMAGE_NAME"
-          REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
+          REPOSITORY=manloralm/$IMAGE_NAME
           echo "REPOSITORY >> $REPOSITORY"
           RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
           echo "RESPONSE >> $RESPONSE"
