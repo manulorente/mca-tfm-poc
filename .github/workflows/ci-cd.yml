@@ -32,7 +32,7 @@ jobs:
             -   name: Run unitary tests
                 run: make test-unit
             -   name: Run integration tests
-                run: make test-int
+                run: make test-integration
             -   name: Run acceptance tests
                 run: make test-acceptance
     prepare-image:
