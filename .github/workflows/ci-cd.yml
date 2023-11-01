@@ -44,10 +44,11 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
-      - name: Build the Docker image
-        run: make build
-      - name: Load environment variables
-        run: cat app/.env >> $GITHUB_ENV
+      - name: Load environment variables from .env
+        id: dotenv
+        uses: ./.github/actions/dotenv-action
+        with:
+          path: app/.env
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
