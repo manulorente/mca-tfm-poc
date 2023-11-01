@@ -1,82 +1,85 @@
 name: CI-CD
 
 on:
-    push:
-        branches: 
-        - main
-        paths:
-        - '.github/workflows/ci-cd.yml'
-        - 'app/**'
-        - 'Makefile'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ci-cd.yml'
+      - 'app/**'
+      - 'Makefile'
 
 jobs:
-    checkstyle:
-        name: Analyzes the code
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Check out the repository
-                uses: actions/checkout@v2
-            -   name: Build the Docker image
-                run: make build
-            -   name: Run checkstyle
-                run: make pre-commit
-    tests:
-        name: Run unitary and integration tests
-        needs: checkstyle
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Check out the repository
-                uses: actions/checkout@v2
-            -   name: Build the Docker image
-                run: make build
-            -   name: Run unitary tests
-                run: make test-unit
-            -   name: Run integration tests
-                run: make test-integration
-            -   name: Run acceptance tests
-                run: make test-acceptance
-    prepare-image:
-        name: Prepare image
-        needs: tests
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Check out the repository
-                uses: actions/checkout@v2
-            -   name: Build the Docker image
-                run: make build
-            -   name: Load environment variables
-                run: |
-                    cat app /.env >> $GITHUB_ENV
-            -   name: Login to DockerHub
-                uses: docker/login-action@v1
-                with:
-                    username: ${{ secrets.DOCKERHUB_USERNAME }}
-                    password: ${{ secrets.DOCKERHUB_TOKEN }}
-            -   name: Tag Docker image with the next release candidate
-                run: |
-                    LATEST_RC=$(echo "$IMAGE_TAG" | awk -F. '{print $NF}')
-                    NEXT_RC=$((LATEST_RC + 1))
-                    docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-rc$NEXT_RC
-            -   name: Push Docker image as release candidate
-                run: |
-                    docker push $IMAGE_NAME:$IMAGE_TAG-rc$NEXT_RC 
-    publish-image:
-        name: Publish image
-        needs: prepare-image
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Check out the repository
-                uses: actions/checkout@v2
-            -   name: Tag Docker image with the latest release
-                run: |
-                    REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
-                    RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
-                    TAGS=$(echo "$RESPONSE" | grep -o "\"name\":\"$IMAGE_TAG-rc[0-9]*\"" | grep -o "$IMAGE_TAG-rc[0-9]*")
-                    SORTED_TAGS=$(echo "$TAGS" | sort -V)
-                    LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
-                    docker pull $REPOSITORY:$LATEST_TAG
-                    docker tag $REPOSITORY:$LATEST_TAG $REPOSITORY:latest
-            -   name: Push Docker image with the latest release
-                run: |
-                    docker push $REPOSITORY:latest
+  checkstyle:
+    name: Analyze the code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: make build
+      - name: Run checkstyle
+        run: make pre-commit
 
+  tests:
+    name: Run tests
+    needs: checkstyle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: make build
+      - name: Run unit tests
+        run: make test-unit
+      - name: Run integration tests
+        run: make test-integration
+      - name: Run acceptance tests
+        run: make test-acceptance
+
+  prepare-image:
+    name: Prepare image and tag
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: make build
+      - name: Load environment variables
+        run: cat app/.env >> $GITHUB_ENV
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Tag Docker image with the next release candidate
+        run: |
+          LATEST_RC=$(echo "$IMAGE_TAG" | awk -F. '{print $NF}')
+          NEXT_RC=$((LATEST_RC + 1))
+          docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-rc$NEXT_RC
+      - name: Push Docker image as release candidate
+        run: |
+          docker push $IMAGE_NAME:$IMAGE_TAG-rc$NEXT_RC
+
+  publish-image:
+    name: Publish image
+    needs: prepare-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+      - name: Determine the latest release candidate tag
+        run: |
+          REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
+          RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
+          TAGS=$(echo "$RESPONSE" | grep -o "\"name\":\"$IMAGE_TAG-rc[0-9]*\"" | grep -o "$IMAGE_TAG-rc[0-9]*")
+          SORTED_TAGS=$(echo "$TAGS" | sort -V)
+          LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
+          echo "::set-env name=LATEST_TAG::$LATEST_TAG"
+      - name: Pull the latest release candidate image
+        run: docker pull $REPOSITORY:$LATEST_TAG
+      - name: Tag Docker image with the latest release
+        run: docker tag $REPOSITORY:$LATEST_TAG $REPOSITORY:latest
+      - name: Push Docker image with the latest release
+        run: docker push $REPOSITORY:latest
