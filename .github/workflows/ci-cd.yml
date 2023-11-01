@@ -55,6 +55,7 @@ jobs:
       - name: Tag Docker image with the next release candidate
         run: |
           LATEST_RC=$(echo "$IMAGE_TAG" | awk -F. '{print $NF}')
+          echo $LATEST_RC
           NEXT_RC=$((LATEST_RC + 1))
           docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-rc$NEXT_RC
       - name: Push Docker image as release candidate
@@ -69,16 +70,17 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v2
       - name: Pull the latest image
-        run: docker pull $IMAGE_NAME:$IMAGE_TAG
+        run: | 
+          RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
+          TAGS=$(echo "$RESPONSE" | grep -o "\"name\":\"$IMAGE_TAG-rc[0-9]*\"" | grep -o "$IMAGE_TAG-rc[0-9]*")
+          SORTED_TAGS=$(echo "$TAGS" | sort -V)
+          LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
+          docker pull $IMAGE_NAME:$IMAGE_TAG
       - name: Run integration tests
         run: make test-integration
       - name: Determine the latest release candidate tag
         run: |
           REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
-          RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
-          TAGS=$(echo "$RESPONSE" | grep -o "\"name\":\"$IMAGE_TAG-rc[0-9]*\"" | grep -o "$IMAGE_TAG-rc[0-9]*")
-          SORTED_TAGS=$(echo "$TAGS" | sort -V)
-          LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
           echo "::set-env name=LATEST_TAG::$LATEST_TAG"
       - name: Pull the latest release candidate image
         run: docker pull $REPOSITORY:$LATEST_TAG
