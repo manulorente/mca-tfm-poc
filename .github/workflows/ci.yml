@@ -54,13 +54,12 @@ jobs:
           set -a
           [ -f app/.env ] && . app/.env
           set +a
-          echo "IMAGE_NAME >> $IMAGE_NAME"
-          echo "IMAGE_TAG >> $IMAGE_TAG"
-          echo "CONTAINER_NAME >> $CONTAINER_NAME"
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_TAG $CONTAINER_NAME
       - name: Tag Docker image with the next release candidate
         run: |
-          echo "::set-env name=IMAGE_NAME::$IMAGE_NAME"
+          set -a
+          [ -f app/.env ] && . app/.env
+          set +a
           echo "IMAGE_NAME >> $IMAGE_NAME"
           REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
           echo "REPOSITORY >> $REPOSITORY"
