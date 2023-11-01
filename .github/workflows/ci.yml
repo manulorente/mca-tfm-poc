@@ -56,7 +56,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Tag Docker image with the next release candidate
         run: |
-          REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
+          REPOSITORY=$(${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME)
           echo "REPOSITORY >> $REPOSITORY"
           RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
           echo "RESPONSE >> $RESPONSE"
@@ -71,6 +71,7 @@ jobs:
           NEXT_RC=$((LATEST_RC + 1))
           echo "NEXT_RC >> $NEXT_RC"
           docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-rc$NEXT_RC
+    
       - name: Push Docker image as release candidate
         run: |
           docker push $IMAGE_NAME:$IMAGE_TAG-rc$NEXT_RC
