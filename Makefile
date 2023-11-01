@@ -14,28 +14,23 @@ local-setup:  ## Set up the local environment installing git hooks.
 
 .PHONY: build
 build:  ## Build the app.
-	@echo "Building the app $(APP_NAME)."
+	@echo "Building $(APP_NAME) docker image as $(IMAGE_NAME):$(IMAGE_TAG)."
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) $(CONTAINER_NAME)
 
 .PHONY: clean
 clean:  ## Clean the app.
-	@echo "Cleaning the app $(APP_NAME)."
+	@echo "Cleaning $(CONTAINER_NAME) docker image."
 	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml down --rmi all --volumes --remove-orphans
 
-.PHONY: dev
-dev:  ## Start the app in development mode.
-	@echo "Starting the app in development mode."	
+.PHONY: run
+run:  ## Start the app in development mode.
+	@echo "Starting $(APP_NAME) in development mode."
 	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml up --build $(CONTAINER_NAME)
 
-.PHONY: prod
-prod:  ## Start the app in production mode
-	@echo "Starting the app in production mode."
-	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml up
-
 .PHONY: install
-install:  ## Install a new package in the app. ex: make install PKG=package_name
-	@echo "Installing a package $(PKG) in the app."
-	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry add $(PKG)@latest
+install:  ## Install a new package in the app. ex: make install pkg=package_name
+	@echo "Installing a package $(pkg) in the $(CONTAINER_NAME) docker image."
+	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry add $(pkg)@latest
 	$(MAKE) build
 	
 .PHONY: test

@@ -31,13 +31,12 @@ The project uses [Makefiles](https://www.gnu.org/software/make/manual/html_node/
 - `help` : Shows this help.
 - `local-setup`: Sets up the local environment (e.g. install git hooks).
 - `build`: Builds the app.
-- `update`: Updates the app packages.
-- `install package=XXX`: Installs the package XXX in the app, ex: `make install package=requests`.
+- `clean`: Cleans the app.
 - `run`: Runs the app.
-- `check-typing`: Runs a static analyzer over the code in order to find issues.
-- `check-format`: Checks the code format.
-- `check-style`: Checks the code style.
+- `install package=XXX`: Installs the package XXX in the app, ex: `make install package=requests`.
 - `reformat`: Formats the code.
+- `check-typing`: Runs a static analyzer over the code in order to find issues.
+- `check-style`: Checks the code style.
 - `test`: Run all the tests.
 
 **Important: Please run the `make local-setup` command before starting with the code.**
@@ -59,5 +58,4 @@ This project uses [Poetry](https://python-poetry.org) as the package manager.
 ### Code style
 
 - [mypy](https://mypy.readthedocs.io/en/stable/): A static type checker.
-- [yapf](https://github.com/google/yapf): A Pyhton formatter.
-- [ruff](https://github.com/astral-sh/ruff): An extremely fast Python linter, written in Rust..
+- [ruff](https://github.com/astral-sh/ruff): An extremely fast Python linter, written in Rust.

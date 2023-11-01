@@ -4,10 +4,20 @@ services:
   app:
     container_name: ${CONTAINER_NAME}
     image: ${IMAGE_NAME}:${IMAGE_TAG}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - APP_PORT=${APP_PORT}
+        - APP_HOST=${APP_HOST}
+        - APP_MODULE=${APP_MODULE}
     volumes:
       - .:/src
     ports:
-      - "8080:8080"
+      - ${APP_PORT}:${CONTAINER_PORT}
     env_file:
       - .env
-      
+    environment:
+      - APP_PORT=${APP_PORT}
+      - APP_HOST=${APP_HOST}
+      - APP_MODULE=${APP_MODULE}
