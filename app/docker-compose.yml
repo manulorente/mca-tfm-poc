@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  app:
+    container_name: ${CONTAINER_NAME}
+    image: ${IMAGE_NAME}:${IMAGE_TAG}
+    volumes:
+      - .:/src
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+      
