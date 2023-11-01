@@ -75,7 +75,7 @@ jobs:
           echo "LATEST_RC >> $LATEST_RC"
           NEXT_RC=$((LATEST_RC + 1))
           echo "NEXT_RC >> $NEXT_RC"
-          docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-rc$NEXT_RC
+          docker tag $REPOSITORY:$IMAGE_TAG $REPOSITORY:$IMAGE_TAG-rc$NEXT_RC
   push-image:
     name: Push image as release candidate
     needs: prepare-image
@@ -90,4 +90,4 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Push Docker image as release candidate
         run: |
-          docker push $IMAGE_NAME:$IMAGE_TAG-rc$NEXT_RC
+          docker push $REPOSITORY:$IMAGE_TAG-rc$NEXT_RC
