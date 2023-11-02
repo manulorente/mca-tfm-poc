@@ -47,7 +47,7 @@ prepare-image:  ## Prepare the image for release.
 	TAGS=$(if [ -z "$(RESPONSE)" ]; then echo "$(IMAGE_TAG)-rc0"; else echo "$(RESPONSE)" | jq -r '.results[].name'; fi)
 	SORTED_TAGS=$(echo "$(TAGS)" | sort -V)
 	LATEST_TAG=$(echo "$(SORTED_TAGS)" | tail -1)
-	LATEST_RC=$(echo "$(LATEST_TAG)" | awk -F-rc '{print $$NF}')
+	LATEST_RC=$(echo "$(LATEST_TAG)" | awk -F-rc '{print $NF}')
 	NEXT_RC=$((LATEST_RC + 1))
 	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
 
