@@ -41,7 +41,7 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 
 .PHONY: prepare-image
 prepare-image:  ## Prepare the image for release.
-	@echo "Preparing the image for release."
+	@echo "Preparing the image for release candidate."
     export REPOSITORY=manloralm/mca-tfm-poc
     export LATEST_TAG=$(shell curl -s "https://hub.docker.com/v2/repositories/manloralm/mca-tfm-poc/tags/" | jq -r '.results[].name' | sort -V | tail -n1)
     export LATEST_RC=$(shell echo "$(LATEST_TAG)" | awk -F-rc '{print $NF}')
