@@ -44,6 +44,8 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
+      - name: Install awk
+        run: sudo apt-get update && sudo apt-get install -y gawk        
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
