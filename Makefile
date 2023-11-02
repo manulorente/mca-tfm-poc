@@ -44,8 +44,8 @@ prepare-image:  ## Prepare the image for release.
 	@echo "Preparing the image for release."
 	REPOSITORY=manloralm/mca-tfm-poc
 	LATEST_TAG=$(shell curl -s "https://hub.docker.com/v2/repositories/manloralm/mca-tfm-poc/tags/" | jq -r '.results[].name' | sort -V | tail -n1)
-	LATEST_RC=$(shell echo "$(LATEST_TAG)" | awk -F-rc '{print $NF}')
-	NEXT_RC=$(expr $(LATEST_RC) + 1)
+	LATEST_RC=$(shell echo "0.0.1-rc0" | awk -F-rc '{print $NF}')
+	NEXT_RC=$(shell expr $(LATEST_RC) + 1)
 	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
 
 .PHONY: push-image-rc
