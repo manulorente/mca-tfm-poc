@@ -15,7 +15,7 @@ local-setup:  ## Set up the local environment installing git hooks.
 .PHONY: build
 build:  ## Build the app.
 	@echo "Building $(APP_NAME) docker image as $(IMAGE_NAME):$(IMAGE_TAG)."
-	docker build -t $(REPO_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG) --build-arg APP_PORT=$(APP_PORT) --build-arg APP_HOST=$(APP_HOST) --build-arg APP_MODULE=$(APP_MODULE) $(CONTAINER_NAME)
+	docker build -t $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG) --build-arg APP_PORT=$(APP_PORT) --build-arg APP_HOST=$(APP_HOST) --build-arg APP_MODULE=$(APP_MODULE) $(CONTAINER_NAME)
 
 .PHONY: clean
 clean:  ## Clean the app.
@@ -42,27 +42,24 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 .PHONY: prepare-image
 prepare-image:  ## Prepare the image for release.
 	@echo "Preparing the image for release."
-	REPOSITORY=$(REPO_USERNAME)/$(IMAGE_NAME)
-	@echo REPOSITORY=$(REPOSITORY)
-	# RESPONSE=$(shell curl -s "https://hub.docker.com/v2/repositories/$(REPOSITORY)/tags")
+	REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
 	RESPONSE=$(shell curl -s "https://hub.docker.com/v2/repositories/manloralm/mca-tfm-poc/tags")
-	@echo RESPONSE=$(RESPONSE)
-	TAGS=$$(if [ -z "$(RESPONSE)" ]; then echo "$(IMAGE_TAG)-rc0"; else echo "$(RESPONSE)" | jq -r '.results[].name'; fi)
-	SORTED_TAGS=$$(echo "$(TAGS)" | sort -V)
-	LATEST_TAG=$$(echo "$(SORTED_TAGS)" | tail -1)
-	LATEST_RC=$$(echo "$(LATEST_TAG)" | awk -F-rc '{print $$NF}')
-	NEXT_RC=$$((LATEST_RC + 1))
+	TAGS=$(if [ -z "$(RESPONSE)" ]; then echo "$(IMAGE_TAG)-rc0"; else echo "$(RESPONSE)" | jq -r '.results[].name'; fi)
+	SORTED_TAGS=$(echo "$(TAGS)" | sort -V)
+	LATEST_TAG=$(echo "$(SORTED_TAGS)" | tail -1)
+	LATEST_RC=$(echo "$(LATEST_TAG)" | awk -F-rc '{print $$NF}')
+	NEXT_RC=$((LATEST_RC + 1))
 	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
 
 .PHONY: push-image-rc
 push-image-rc: ## Push the release candidate
 	@echo "Pushing the release candidate."
-    docker push $(REPO_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG)-rc$(NEXT_RC)
+    docker push $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG)-rc$(NEXT_RC)
 
 .PHONY: publish-release
 publish-release: ## Publish the releasea to PROD as latest
 	@echo "Publishing the release to PROD as latest."
-	REPOSITORY=$(REPO_USERNAME)/$(IMAGE_NAME)
+	REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
 	RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
 	TAGS=$( echo "$RESPONSE" | jq -r '.results[].name' )
 	SORTED_TAGS=$(echo "$TAGS" | sort -V)
