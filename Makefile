@@ -43,7 +43,7 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 prepare-image:  ## Prepare the image for release.
 	@echo "Preparing the image for release."
 	REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
-	RESPONSE=$$(curl -s "https://hub.docker.com/v2/repositories/$(REPOSITORY)/tags")
+	RESPONSE=$(shell curl -s "https://hub.docker.com/v2/repositories/$(REPOSITORY)/tags")
 	TAGS=$$(if [ -z "$(RESPONSE)" ]; then echo "$(IMAGE_TAG)-rc0"; else echo "$(RESPONSE)" | jq -r '.results[].name'; fi)
 	SORTED_TAGS=$$(echo "$(TAGS)" | sort -V)
 	LATEST_TAG=$$(echo "$(SORTED_TAGS)" | tail -1)
