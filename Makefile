@@ -4,7 +4,7 @@ include ./app/.env
 
 export REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
 export LATEST_TAG=$(shell curl -s "https://hub.docker.com/v2/repositories/${REPOSITORY}/tags/" | jq -r '.results[].name' | sort -V | tail -n1)
-export LATEST_RC=$(shell echo "$(LATEST_TAG)" | awk -F-rc '{print $NF}')
+export LATEST_RC=$(shell if [ -n "$(LATEST_TAG)" ]; then echo "$(LATEST_TAG)" | awk -F-rc '{print $$NF}'; else echo "$(IMAGE_TAG):rc0"; fi)
 export NEXT_RC=$(shell expr $(LATEST_RC) + 1)
 
 .PHONY: help
