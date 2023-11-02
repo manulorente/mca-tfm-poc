@@ -1,11 +1,6 @@
 # Use an official Python image as the base image
 FROM python:3.11.5-alpine AS base
 
-# Define arguments
-ARG APP_PORT
-ARG APP_HOST
-ARG APP_MODULE
-
 # Set the working directory within the container
 WORKDIR /src
 

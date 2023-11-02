@@ -25,7 +25,7 @@ local-setup:  ## Set up the local environment installing git hooks.
 .PHONY: build
 build:  ## Build the app.
 	@echo "Building $(APP_NAME) docker image as $(IMAGE_NAME):$(IMAGE_TAG)."
-	docker build -t $(REPOSITORY):$(IMAGE_TAG) --build-arg APP_PORT=$(APP_PORT) --build-arg APP_HOST=$(APP_HOST) --build-arg APP_MODULE=$(APP_MODULE) $(CONTAINER_NAME)
+	docker build -t $(REPOSITORY):$(IMAGE_TAG) $(CONTAINER_NAME)
 
 .PHONY: clean
 clean:  ## Clean the app.
@@ -51,18 +51,18 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 
 .PHONY: prepare-image-rc
 prepare-image-rc:  ## Prepare the image for release.
-	@echo "Preparing the image for release candidate."
+	@echo "Preparing the image for release candidate - $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)"
 	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
 
 .PHONY: push-image-rc
 push-image-rc: ## Push the release candidate
-	@echo "Pushing the release candidate."
-    docker push $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG)-rc$(NEXT_RC)
+	@echo "Pushing the release candidate -  $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)"
+	docker push $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
 
 .PHONY: publish-release
 publish-release: ## Publish the releasea to PROD as latest
-	@echo "Publishing the release to PROD as latest."
-    docker pull $(REPOSITORY):$(LATEST_TAG)
+	@echo "Publishing the release to PROD - $(REPOSITORY):latest"
+	docker pull $(REPOSITORY):$(LATEST_TAG)
 	docker tag $(REPOSITORY):$(LATEST_TAG) $(REPOSITORY):latest
 	docker push $(REPOSITORY):latest
 

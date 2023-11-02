@@ -16,6 +16,10 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'      
       - name: Build the Docker image
         run: make build
       - name: Run checkstyle
@@ -28,6 +32,10 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'          
       - name: Build the Docker image
         run: make build
       - name: Run unit tests
@@ -38,12 +46,16 @@ jobs:
         run: make test-integration        
 
   publish-release-candidate:
-    name: Prepare image and push it to DockerHub
+    name: Prepare image and push to DockerHub
     needs: tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2   
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'          
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -51,7 +63,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}        
       - name: Create Docker image
         run: make build
-      - name: Tag Docker image with the next release candidate
+      - name: Tag Docker image as next release candidate
         run: make prepare-image-rc
-      - name: Push Docker image as release candidate
+      - name: Push Docker image to DockerHub
         run: make push-image-rc
