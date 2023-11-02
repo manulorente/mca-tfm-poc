@@ -10,36 +10,36 @@ on:
       - 'Makefile'
 
 jobs:
-  #checkstyle:
-  #  name: Analyze the code
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - name: Check out the repository
-  #      uses: actions/checkout@v2
-  #    - name: Build the Docker image
-  #      run: make build
-  #    - name: Run checkstyle
-  #      run: make pre-commit
-#
-  #tests:
-  #  name: Run tests
-  #  needs: checkstyle
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - name: Check out the repository
-  #      uses: actions/checkout@v2
-  #    - name: Build the Docker image
-  #      run: make build
-  #    - name: Run unit tests
-  #      run: make test-unit
-  #    - name: Run acceptance tests
-  #      run: make test-acceptance
-  #    - name: Run integration tests
-  #      run: make test-integration        
+  checkstyle:
+    name: Analyze the code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: make build
+      - name: Run checkstyle
+        run: make pre-commit
+    
+  tests:
+    name: Run tests
+    needs: checkstyle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: make build
+      - name: Run unit tests
+        run: make test-unit
+      - name: Run acceptance tests
+        run: make test-acceptance
+      - name: Run integration tests
+        run: make test-integration        
 
   publish-release-candidate:
     name: Prepare image and push it to DockerHub
-    #needs: tests
+    needs: tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository

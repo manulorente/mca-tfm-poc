@@ -25,7 +25,7 @@ local-setup:  ## Set up the local environment installing git hooks.
 .PHONY: build
 build:  ## Build the app.
 	@echo "Building $(APP_NAME) docker image as $(IMAGE_NAME):$(IMAGE_TAG)."
-	docker build -t $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG) --build-arg APP_PORT=$(APP_PORT) --build-arg APP_HOST=$(APP_HOST) --build-arg APP_MODULE=$(APP_MODULE) $(CONTAINER_NAME)
+	docker build -t $(REPOSITORY):$(IMAGE_TAG) --build-arg APP_PORT=$(APP_PORT) --build-arg APP_HOST=$(APP_HOST) --build-arg APP_MODULE=$(APP_MODULE) $(CONTAINER_NAME)
 
 .PHONY: clean
 clean:  ## Clean the app.
@@ -49,8 +49,8 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry remove $(pkg)
 	$(MAKE) build
 
-.PHONY: prepare-image
-prepare-image:  ## Prepare the image for release.
+.PHONY: prepare-image-rc
+prepare-image-rc:  ## Prepare the image for release.
 	@echo "Preparing the image for release candidate."
 	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
 
