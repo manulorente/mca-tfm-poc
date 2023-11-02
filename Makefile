@@ -43,20 +43,20 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 prepare-image:  ## Prepare the image for release.
 	@echo "Preparing the image for release."
 	REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
-	echo "REPOSITORY --> $(REPOSITORY)"
-	RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
-	echo "RESPONSE --> $(RESPONSE)"
-	TAGS=$( [ -z "$RESPONSE" ] && echo "$IMAGE_TAG-rc0" || echo "$RESPONSE" | jq -r '.results[].name' )
-	echo "TAGS --> $TAGS"
-	SORTED_TAGS=$(echo "$TAGS" | sort -V)
-	echo "SORTED_TAGS --> $SORTED_TAGS"
-	LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
-	echo "LATEST_TAG --> $LATEST_TAG"
-	LATEST_RC=$(echo "$LATEST_TAG" | awk -F-rc '{print $NF}')
-	echo "LATEST_RC --> $LATEST_RC"
-	NEXT_RC=$((LATEST_RC + 1))
-	echo "NEXT_RC --> $NEXT_RC"
-	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
+	@echo "REPOSITORY --> $${REPOSITORY}"
+	RESPONSE=$$(curl -s "https://hub.docker.com/v2/repositories/$${REPOSITORY}/tags")
+	@echo "RESPONSE --> $${RESPONSE}"
+	TAGS=$$(if [ -z "$${RESPONSE}" ]; then echo "$${IMAGE_TAG}-rc0"; else echo "$${RESPONSE}" | jq -r '.results[].name'; fi)
+	@echo "TAGS --> $${TAGS}"
+	SORTED_TAGS=$$(echo "$${TAGS}" | sort -V)
+	@echo "SORTED_TAGS --> $${SORTED_TAGS}"
+	LATEST_TAG=$$(echo "$${SORTED_TAGS}" | tail -1)
+	@echo "LATEST_TAG --> $${LATEST_TAG}"
+	LATEST_RC=$$(echo "$${LATEST_TAG}" | awk -F-rc '{print $NF}')
+	@echo "LATEST_RC --> $${LATEST_RC}"
+	NEXT_RC=$$((LATEST_RC + 1))
+	@echo "NEXT_RC --> $${NEXT_RC}"
+	docker tag $${REPOSITORY}:$${IMAGE_TAG} $${REPOSITORY}:$${IMAGE_TAG}-rc$${NEXT_RC}
 
 .PHONY: push-image-rc
 push-image-rc: ## Push the release candidate
