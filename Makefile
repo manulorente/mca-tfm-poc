@@ -43,9 +43,9 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 prepare-image:  ## Prepare the image for release.
 	@echo "Preparing the image for release."
 	REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
-	echo "REPOSITORY --> $REPOSITORY"
+	echo "REPOSITORY --> $(REPOSITORY)"
 	RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
-	echo "RESPONSE --> $RESPONSE"
+	echo "RESPONSE --> $(RESPONSE)"
 	TAGS=$( [ -z "$RESPONSE" ] && echo "$IMAGE_TAG-rc0" || echo "$RESPONSE" | jq -r '.results[].name' )
 	echo "TAGS --> $TAGS"
 	SORTED_TAGS=$(echo "$TAGS" | sort -V)
