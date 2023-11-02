@@ -7,11 +7,6 @@ export LATEST_TAG=$(shell curl -s "https://hub.docker.com/v2/repositories/${REPO
 export LATEST_RC=$(shell echo "$(LATEST_TAG)" | awk -F-rc '{print $NF}')
 export NEXT_RC=$(shell expr $(LATEST_RC) + 1)
 
-@echo "REPOSITORY: $(REPOSITORY)"
-@echo "LATEST_TAG: $(LATEST_TAG)"
-@echo "LATEST_RC: $(LATEST_RC)"
-@echo "NEXT_RC: $(NEXT_RC)"
-
 .PHONY: help
 help:  ## Show this help.
 	@grep -E '^\S+:.*?## .*$$' $(firstword $(MAKEFILE_LIST)) | \

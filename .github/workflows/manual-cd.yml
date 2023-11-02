@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: 'Release to deploy in PRO'
+        description: 'Release to deploy in PROD'
         required: true
 
 jobs:
@@ -12,6 +12,10 @@ jobs:
     name: Publish image
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'       
       - name: Check out the repository
         uses: actions/checkout@v2
       - name: Login to DockerHub
