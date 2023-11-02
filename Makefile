@@ -2,6 +2,16 @@
 
 include ./app/.env
 
+export REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
+export LATEST_TAG=$(shell curl -s "https://hub.docker.com/v2/repositories/${REPOSITORY}/tags/" | jq -r '.results[].name' | sort -V | tail -n1)
+export LATEST_RC=$(shell echo "$(LATEST_TAG)" | awk -F-rc '{print $NF}')
+export NEXT_RC=$(shell expr $(LATEST_RC) + 1)
+
+@echo "REPOSITORY: $(REPOSITORY)"
+@echo "LATEST_TAG: $(LATEST_TAG)"
+@echo "LATEST_RC: $(LATEST_RC)"
+@echo "NEXT_RC: $(NEXT_RC)"
+
 .PHONY: help
 help:  ## Show this help.
 	@grep -E '^\S+:.*?## .*$$' $(firstword $(MAKEFILE_LIST)) | \
@@ -42,10 +52,6 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 .PHONY: prepare-image
 prepare-image:  ## Prepare the image for release.
 	@echo "Preparing the image for release candidate."
-	export REPOSITORY=manloralm/mca-tfm-poc
-	export LATEST_TAG=$(shell curl -s "https://hub.docker.com/v2/repositories/$(REPOSITORY)/tags/" | jq -r '.results[].name' | sort -V | tail -n1)
-	export LATEST_RC=$(shell echo "$(LATEST_TAG)" | awk -F-rc '{print $NF}')
-	export NEXT_RC=$(shell expr $(LATEST_RC) + 1)
 	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
 
 .PHONY: push-image-rc
@@ -56,11 +62,6 @@ push-image-rc: ## Push the release candidate
 .PHONY: publish-release
 publish-release: ## Publish the releasea to PROD as latest
 	@echo "Publishing the release to PROD as latest."
-	REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
-	RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
-	TAGS=$( echo "$RESPONSE" | jq -r '.results[].name' )
-	SORTED_TAGS=$(echo "$TAGS" | sort -V)
-	LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
     docker pull $(REPOSITORY):$(LATEST_TAG)
 	docker tag $(REPOSITORY):$(LATEST_TAG) $(REPOSITORY):latest
 	docker push $(REPOSITORY):latest
