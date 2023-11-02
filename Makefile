@@ -44,7 +44,8 @@ prepare-image:  ## Prepare the image for release.
 	@echo "Preparing the image for release."
 	REPOSITORY=$(REPO_USERNAME)/$(IMAGE_NAME)
 	@echo REPOSITORY=$(REPOSITORY)
-	RESPONSE=$(shell curl -s "https://hub.docker.com/v2/repositories/$$REPOSITORY/tags")
+	# RESPONSE=$(shell curl -s "https://hub.docker.com/v2/repositories/$(REPOSITORY)/tags")
+	RESPONSE=$(shell curl -s "https://hub.docker.com/v2/repositories/manloralm/mca-tfm-poc/tags")
 	@echo RESPONSE=$(RESPONSE)
 	TAGS=$$(if [ -z "$(RESPONSE)" ]; then echo "$(IMAGE_TAG)-rc0"; else echo "$(RESPONSE)" | jq -r '.results[].name'; fi)
 	SORTED_TAGS=$$(echo "$(TAGS)" | sort -V)
