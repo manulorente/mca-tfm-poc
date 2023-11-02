@@ -43,9 +43,7 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 prepare-image:  ## Prepare the image for release.
 	@echo "Preparing the image for release."
 	REPOSITORY := $(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
-	TAGS := $(shell curl -s "https://hub.docker.com/v2/repositories/manloralm/mca-tfm-poc/tags/" | jq -r '.results[].name')
-	SORTED_TAGS=$(echo "$(TAGS)" | sort -V)
-	LATEST_TAG=$(echo "$(SORTED_TAGS)" | tail -1)
+	LATEST_TAG := $(shell curl -s "https://hub.docker.com/v2/repositories/manloralm/mca-tfm-poc/tags/" | jq -r '.results[].name | sort -V | tail -n1')
 	LATEST_RC=$(echo "$(LATEST_TAG)" | awk -F-rc '{print $NF}')
 	NEXT_RC=$((LATEST_RC + 1))
 	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
