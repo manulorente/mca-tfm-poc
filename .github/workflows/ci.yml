@@ -20,7 +20,7 @@ jobs:
         run: make build
       - name: Run checkstyle
         run: make pre-commit
-    
+
   tests:
     name: Run tests
     needs: checkstyle
@@ -52,6 +52,6 @@ jobs:
       - name: Create Docker image
         run: make build
       - name: Tag Docker image with the next release candidate
-        run: make prepare-image
+        run: make prepare-image-rc
       - name: Push Docker image as release candidate
         run: make push-image-rc
