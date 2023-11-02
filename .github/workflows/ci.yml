@@ -37,48 +37,21 @@ jobs:
       - name: Run integration tests
         run: make test-integration        
 
-  prepare-image:
+  prepare-release-candidate:
     name: Prepare image and tag
     needs: tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
-      - name: Load environment variables from .env
-        run: |
-            set -a
-            [ -f app/.env ] && . app/.env
-            set +a
       - name: Create Docker image
-        run: |
-          set -a
-          [ -f app/.env ] && . app/.env
-          set +a
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_TAG $CONTAINER_NAME
+        run: make build
       - name: Tag Docker image with the next release candidate
-        run: |
-          set -a
-          [ -f app/.env ] && . app/.env
-          set +a
-          echo "IMAGE_NAME >> $IMAGE_NAME"
-          REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
-          echo "REPOSITORY >> $REPOSITORY"
-          RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
-          echo "RESPONSE >> $RESPONSE"
-          TAGS=$( [ -z "$RESPONSE" ] && echo "$IMAGE_TAG-rc0" || echo "$RESPONSE" | grep -o "\"name\":\"$IMAGE_TAG-rc[0-9]*\"" | grep -o "$IMAGE_TAG-rc[0-9]*" )
-          echo "TAGS >> $TAGS"
-          SORTED_TAGS=$(echo "$TAGS" | sort -V)
-          echo "SORTED_TAGS >> $SORTED_TAGS"
-          LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
-          echo "LATEST_TAG >> $LATEST_TAG"
-          LATEST_RC=$(echo "$LATEST_TAG" | awk -F. '{print $NF}')
-          echo "LATEST_RC >> $LATEST_RC"
-          NEXT_RC=$((LATEST_RC + 1))
-          echo "NEXT_RC >> $NEXT_RC"
-          docker tag $REPOSITORY:$IMAGE_TAG $REPOSITORY:$IMAGE_TAG-rc$NEXT_RC
-  push-image:
+        run: make prepare-image
+
+  push-release-candidate:
     name: Push image as release candidate
-    needs: prepare-image
+    needs: prepare-release-candidate
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
@@ -89,9 +62,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Push Docker image as release candidate
-        run: |
-          set -a
-          [ -f app/.env ] && . app/.env
-          set +a
-          REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
-          docker push $REPOSITORY:$IMAGE_TAG-rc$NEXT_RC
+        run: make push-image-rc

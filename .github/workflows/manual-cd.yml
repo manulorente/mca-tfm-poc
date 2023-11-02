@@ -14,11 +14,6 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
-      - name: Load environment variables from .env
-        run: |
-            set -a
-            [ -f app/.env ] && . app/.env
-            set +a
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:

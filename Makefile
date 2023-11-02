@@ -15,7 +15,7 @@ local-setup:  ## Set up the local environment installing git hooks.
 .PHONY: build
 build:  ## Build the app.
 	@echo "Building $(APP_NAME) docker image as $(IMAGE_NAME):$(IMAGE_TAG)."
-	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) $(CONTAINER_NAME)
+	docker build -t $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG) $(CONTAINER_NAME)
 
 .PHONY: clean
 clean:  ## Clean the app.
@@ -32,7 +32,30 @@ install:  ## Install a new package in the app. ex: make install pkg=package_name
 	@echo "Installing a package $(pkg) in the $(CONTAINER_NAME) docker image."
 	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry add $(pkg)@latest
 	$(MAKE) build
-	
+
+.PHONY: uninstall
+uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_name
+	@echo "Uninstalling a package $(pkg) from the $(CONTAINER_NAME) docker image."
+	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry remove $(pkg)
+	$(MAKE) build
+
+.PHONY: prepare-image
+prepare-image:  ## Prepare the image for release.
+	@echo "Preparing the image for release."
+	REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
+	RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
+	TAGS=$( [ -z "$RESPONSE" ] && echo "$IMAGE_TAG-rc0" || echo "$RESPONSE" | jq -r '.results[].name' )
+	SORTED_TAGS=$(echo "$TAGS" | sort -V)
+	LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
+	LATEST_RC=$(echo "$LATEST_TAG" | awk -F-rc '{print $NF}')
+	NEXT_RC=$((LATEST_RC + 1))
+	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
+
+.PHONY: push-image-rc
+push-image-rc: ## Push the release candidate
+	@echo "Pushing the release candidate."
+    docker push $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG)-rc$(NEXT_RC)
+
 .PHONY: test
 test:  ## Run the unit, integration and acceptance tests.
 	@echo "Running the unit, integration and acceptance tests."
