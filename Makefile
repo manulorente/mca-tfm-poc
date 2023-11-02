@@ -42,7 +42,7 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 .PHONY: prepare-image
 prepare-image:  ## Prepare the image for release.
 	@echo "Preparing the image for release."
-	REPOSITORY=$($(REPO_USERNAME)/$(IMAGE_NAME))
+	REPOSITORY=$(REPO_USERNAME)/$(IMAGE_NAME)
 	@echo REPOSITORY=$(REPOSITORY)
 	RESPONSE=$(shell curl -s "https://hub.docker.com/v2/repositories/$$REPOSITORY/tags")
 	@echo RESPONSE=$(RESPONSE)
