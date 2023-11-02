@@ -18,22 +18,7 @@ jobs:
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}        
-      - name: Pull the latest image
-        run: | 
-          RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
-          TAGS=$(echo "$RESPONSE" | grep -o "\"name\":\"$IMAGE_TAG-rc[0-9]*\"" | grep -o "$IMAGE_TAG-rc[0-9]*")
-          SORTED_TAGS=$(echo "$TAGS" | sort -V)
-          LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
-          docker pull $IMAGE_NAME:$IMAGE_TAG
-      - name: Determine the latest release candidate tag
-        run: |
-          REPOSITORY=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
-          echo "::set-env name=LATEST_TAG::$LATEST_TAG"
-      - name: Pull the latest release candidate image
-        run: docker pull $REPOSITORY:$LATEST_TAG
-      - name: Tag Docker image with the latest release
-        run: docker tag $REPOSITORY:$LATEST_TAG $REPOSITORY:latest
-      - name: Push Docker image with the latest release
-        run: docker push $REPOSITORY:latest
+          password: ${{ secrets.DOCKERHUB_TOKEN }} 
+      - name: Publish the latest release
+        run: make publish-release
   # deploy:

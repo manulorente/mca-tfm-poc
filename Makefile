@@ -15,7 +15,7 @@ local-setup:  ## Set up the local environment installing git hooks.
 .PHONY: build
 build:  ## Build the app.
 	@echo "Building $(APP_NAME) docker image as $(IMAGE_NAME):$(IMAGE_TAG)."
-	docker build -t $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG) $(CONTAINER_NAME)
+	docker build -t $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG) --build-arg APP_PORT=$(APP_PORT) --build-arg APP_HOST=$(APP_HOST) --build-arg APP_MODULE=$(APP_MODULE) $(CONTAINER_NAME)
 
 .PHONY: clean
 clean:  ## Clean the app.
@@ -55,6 +55,18 @@ prepare-image:  ## Prepare the image for release.
 push-image-rc: ## Push the release candidate
 	@echo "Pushing the release candidate."
     docker push $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG)-rc$(NEXT_RC)
+
+.PHONY: publish-release
+publish-release: ## Publish the releasea to PROD as latest
+	@echo "Publishing the release to PROD as latest."
+	REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
+	RESPONSE=$(curl -s "https://hub.docker.com/v2/repositories/$REPOSITORY/tags")
+	TAGS=$( echo "$RESPONSE" | jq -r '.results[].name' )
+	SORTED_TAGS=$(echo "$TAGS" | sort -V)
+	LATEST_TAG=$(echo "$SORTED_TAGS" | tail -1)
+    docker pull $(REPOSITORY):$(LATEST_TAG)
+	docker tag $(REPOSITORY):$(LATEST_TAG) $(REPOSITORY):latest
+	docker push $(REPOSITORY):latest
 
 .PHONY: test
 test:  ## Run the unit, integration and acceptance tests.

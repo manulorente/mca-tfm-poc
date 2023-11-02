@@ -1,6 +1,11 @@
 # Use an official Python image as the base image
 FROM python:3.11.5-alpine AS base
 
+# Define arguments
+ARG APP_PORT
+ARG APP_HOST
+ARG APP_MODULE
+
 # Set the working directory within the container
 WORKDIR /src
 
@@ -17,9 +22,9 @@ RUN poetry install --no-interaction --no-ansi
 COPY . /src
 
 # Define environment variables
-ENV APP_PORT=${APP_PORT} \
-    APP_HOST=${APP_HOST} \
-    APP_MODULE=${APP_MODULE}
+ENV APP_PORT=${APP_PORT}
+ENV APP_HOST=${APP_HOST}
+ENV APP_MODULE=${APP_MODULE}
 
 # Expose the port your FastAPI app will run on
 EXPOSE ${APP_PORT}
