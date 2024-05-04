@@ -1,0 +1,37 @@
+name: CI-PRO
+
+on:
+  pull_request:
+    branches:
+    - main
+    paths:
+    - '.github/workflows/**'
+    - 'app/**'
+    - 'Makefile'
+  
+
+jobs:
+  integration-tests:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: make build
+      - name: Run integration tests
+        run: make test-integration     
+  publish-image:
+    name: Publish image
+    needs: integration-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }} 
+      - name: Publish the latest release
+        run: make publish-release

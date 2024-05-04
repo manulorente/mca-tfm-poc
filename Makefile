@@ -3,9 +3,21 @@
 include ./app/.env
 
 export REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
-export LATEST_TAG=$(shell curl -s "https://hub.docker.com/v2/repositories/${REPOSITORY}/tags/" | jq -r '.results[].name' | sort -V | tail -n1)
-export LATEST_RC=$(shell if [ -n "$(LATEST_TAG)" ]; then echo "$(LATEST_TAG)" | awk -F-rc '{print $$NF}'; else echo "$(IMAGE_TAG):rc0"; fi)
+export TAGS=$(shell curl -s "https://hub.docker.com/v2/repositories/${REPOSITORY}/tags/" | jq -r '.results[].name'| grep -E 'rc[0-9]' | tr '\n' ' ')
+export TAGS_ARRAY=$(foreach tag,$(TAGS),$(tag))
+export LATEST_TAG=$(shell if [ -n "$(TAGS_ARRAY)" ]; then echo "$(TAGS_ARRAY)" | tr ' ' '\n' | sort -V | tail -n1; else echo "new"; fi;)
+export LATEST_RC=$(shell if [ "$(LATEST_TAG)" != "new" ]; then echo "$(LATEST_TAG)" | awk -F-rc '{print $$NF}'; else echo "-1"; fi;)
 export NEXT_RC=$(shell expr $(LATEST_RC) + 1)
+
+.PHONY: show-env
+show-env:  ## Show the environment variables.
+	@echo "Showing the environment variables."
+	@echo "REPOSITORY: $(REPOSITORY)"
+	@echo "TAGS: $(TAGS)"
+	@echo "TAGS_ARRAY: $(TAGS_ARRAY)"
+	@echo "LATEST_TAG: $(LATEST_TAG)"
+	@echo "LATEST_RC: $(LATEST_RC)"
+	@echo "NEXT_RC: $(NEXT_RC)"
 
 .PHONY: help
 help:  ## Show this help.
@@ -56,7 +68,7 @@ push-image-rc: ## Push the release candidate
 
 .PHONY: publish-release
 publish-release: ## Publish the releasea to PROD as latest
-	@echo "Publishing the release to PROD - $(REPOSITORY):latest"
+	@echo "Publishing the release to PROD - $(REPOSITORY):$(LATEST_TAG) as latest"
 	docker pull $(REPOSITORY):$(LATEST_TAG)
 	docker tag $(REPOSITORY):$(LATEST_TAG) $(REPOSITORY):latest
 	docker push $(REPOSITORY):latest

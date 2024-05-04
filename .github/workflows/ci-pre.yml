@@ -1,0 +1,34 @@
+name: CI-PRE
+
+on:
+  push:
+    paths:
+      - '.github/workflows/**'
+      - 'app/**'
+      - 'Makefile'
+
+jobs:
+  checkstyle:
+    name: Check the code style
+    runs-on: ubuntu-latest
+    steps:  
+      - name: Check out the repository
+        uses: actions/checkout@v2     
+      - name: Build the Docker image
+        run: make build
+      - name: Run checkstyle
+        run: make pre-commit
+
+  tests:
+    name: Run unit and acceptance tests
+    needs: checkstyle
+    runs-on: ubuntu-latest
+    steps:       
+      - name: Check out the repository
+        uses: actions/checkout@v2      
+      - name: Build the Docker image
+        run: make build
+      - name: Run unit tests
+        run: make test-unit
+      - name: Run acceptance tests
+        run: make test-acceptance   
