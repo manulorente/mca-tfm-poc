@@ -4,12 +4,12 @@ on:
   pull_request:
     branches:
     - main
-    paths:
-    - '.github/workflows/**'
-    - 'app/**'
-    - 'Makefile'
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
   
-
 jobs:
   integration-tests:
     name: Run integration tests
@@ -20,8 +20,8 @@ jobs:
       - name: Build the Docker image
         run: make build
       - name: Run integration tests
-        run: make test-integration     
-  publish-image:
+        run: make test-integration    
+  publish-image-rc:
     name: Publish image
     needs: integration-tests
     runs-on: ubuntu-latest
@@ -33,5 +33,19 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }} 
+      - name: Publish the release candidate
+        run: make publish-image-rc      
+  publish-image-latest:
+    name: Publish image
+    needs: publish-image-rc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }} 
       - name: Publish the latest release
-        run: make publish-release
+        run: make publish-image-latest

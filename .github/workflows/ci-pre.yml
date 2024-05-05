@@ -2,11 +2,12 @@ name: CI-PRE
 
 on:
   push:
-    paths:
-      - '.github/workflows/**'
-      - 'app/**'
-      - 'Makefile'
-
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+      
 jobs:
   checkstyle:
     name: Check the code style
@@ -18,7 +19,6 @@ jobs:
         run: make build
       - name: Run checkstyle
         run: make pre-commit
-
   tests:
     name: Run unit and acceptance tests
     needs: checkstyle
