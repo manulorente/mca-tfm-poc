@@ -3,7 +3,7 @@ version: '3.9'
 services:
   app:
     container_name: ${CONTAINER_NAME}
-    image: ${IMAGE_NAME}:${IMAGE_TAG}
+    image: ${IMAGE_NAME}:${IMAGE_VERSION}
     build:
       context: .
       dockerfile: Dockerfile
