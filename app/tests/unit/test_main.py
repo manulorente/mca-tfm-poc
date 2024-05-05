@@ -4,4 +4,4 @@ from api.main import app
 
 
 def test_create_application():
-	assert isinstance(app, FastAPI)
+    assert isinstance(app, FastAPI)

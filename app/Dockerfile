@@ -1,5 +1,5 @@
 # Use an official Python image as the base image
-FROM python:3.11.5-alpine AS base
+FROM python:3.12.3-alpine as base
 
 # Set the working directory within the container
 WORKDIR /src
@@ -10,10 +10,10 @@ RUN apk add --no-cache bash && \
     apk del bash
 
 # Copy the dependency files and install dependencies in one step
-COPY pyproject.toml poetry.lock /src/
-RUN poetry install --no-interaction --no-ansi
+COPY pyproject.toml /src/
+RUN poetry install --no-root --no-interaction --no-ansi
 
-# Copy your FastAPI project source code into the container
+# Copy the rest of the source code into the container
 COPY . /src
 
 # Define environment variables
@@ -21,8 +21,8 @@ ENV APP_PORT=${APP_PORT}
 ENV APP_HOST=${APP_HOST}
 ENV APP_MODULE=${APP_MODULE}
 
-# Expose the port your FastAPI app will run on
+# Expose the port the FastAPI app will run on
 EXPOSE ${APP_PORT}
 
 # Use a single CMD instruction
-CMD ["sh", "-c", "poetry run uvicorn $APP_MODULE --reload --host $APP_HOST --port $APP_PORT"]
+CMD ["poetry run uvicorn $APP_MODULE --reload --host $APP_HOST --port $APP_PORT"]

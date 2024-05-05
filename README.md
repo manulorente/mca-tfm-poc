@@ -39,13 +39,11 @@ The project uses [Makefiles](https://www.gnu.org/software/make/manual/html_node/
 - `check-style`: Checks the code style.
 - `test`: Run all the tests.
 
-**Important: Please run the `make local-setup` command before starting with the code.**
-
-_In order to create a commit you have to pass the pre-commit phase which runs the check and test commands._
-
 ## Packages
 
 This project uses [Poetry](https://python-poetry.org) as the package manager.
+
+To run poetry need the `pyproject.toml` and then run `make poetry-init` to install the dependencies.
 
 ### Testing
 

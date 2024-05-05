@@ -12,11 +12,11 @@ settings = get_settings()
 log.info("Creating application...")
 
 app = FastAPI(
-	title=settings.APP_NAME,
-	description=settings.DESCRIPTION,
-	version=settings.VERSION,
-	docs_url=settings.DOC_URL,
-	debug=settings.ENV,
+    title=settings.APP_NAME,
+    description=settings.DESCRIPTION,
+    version=settings.VERSION,
+    docs_url=settings.DOC_URL,
+    debug=settings.ENV,
 )
 
 app.include_router(users.router, prefix=settings.PREFIX)

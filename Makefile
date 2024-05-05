@@ -3,8 +3,10 @@
 include ./app/.env
 
 export REPOSITORY=$(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
-export LATEST_TAG=$(shell curl -s "https://hub.docker.com/v2/repositories/${REPOSITORY}/tags/" | jq -r '.results[].name' | sort -V | tail -n1)
-export LATEST_RC=$(shell if [ -n "$(LATEST_TAG)" ]; then echo "$(LATEST_TAG)" | awk -F-rc '{print $$NF}'; else echo "$(IMAGE_TAG):rc0"; fi)
+export TAGS=$(shell curl -s "https://hub.docker.com/v2/repositories/${REPOSITORY}/tags/" | jq -r '.results[].name'| grep -E 'rc[0-9]' | tr '\n' ' ')
+export TAGS_ARRAY=$(foreach tag,$(TAGS),$(tag))
+export LATEST_TAG=$(shell if [ -n "$(TAGS_ARRAY)" ]; then echo "$(TAGS_ARRAY)" | tr ' ' '\n' | sort -V | tail -n1; else echo "new"; fi;)
+export LATEST_RC=$(shell if [ "$(LATEST_TAG)" != "new" ]; then echo "$(LATEST_TAG)" | awk -F-rc '{print $$NF}'; else echo "-1"; fi;)
 export NEXT_RC=$(shell expr $(LATEST_RC) + 1)
 
 .PHONY: help
@@ -12,10 +14,15 @@ help:  ## Show this help.
 	@grep -E '^\S+:.*?## .*$$' $(firstword $(MAKEFILE_LIST)) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "%-30s %s\n", $$1, $$2}'
 
-.PHONY: local-setup
-local-setup:  ## Set up the local environment installing git hooks.
-	@echo "Setting up local environment."
-	scripts/local-setup.sh
+.PHONY: show-env
+show-env:  ## Show the environment variables.
+	@echo "Showing the environment variables."
+	@echo "REPOSITORY: $(REPOSITORY)"
+	@echo "TAGS: $(TAGS)"
+	@echo "TAGS_ARRAY: $(TAGS_ARRAY)"
+	@echo "LATEST_TAG: $(LATEST_TAG)"
+	@echo "LATEST_RC: $(LATEST_RC)"
+	@echo "NEXT_RC: $(NEXT_RC)"
 
 .PHONY: build
 build:  ## Build the app.
@@ -32,6 +39,11 @@ run:  ## Start the app in development mode.
 	@echo "Starting $(APP_NAME) in development mode."
 	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml up --build $(CONTAINER_NAME)
 
+.PHONY: poetry-init
+poetry-init:  ## Initialize the poetry project and install the dependencies.
+	@echo "Initializing the poetry project and installing the dependencies."
+	cd app && poetry init -n --name $(APP_NAME) --version $(APP_VERSION) --author $(AUTHOR) --description $(DESCRIPTION) --license $(LICENSE) --python $(PYTHON_VERSION) && poetry add $(DEPENDENCIES)
+
 .PHONY: install
 install:  ## Install a new package in the app. ex: make install pkg=package_name
 	@echo "Installing a package $(pkg) in the $(CONTAINER_NAME) docker image."
@@ -44,19 +56,15 @@ uninstall:  ## Uninstall a package from the app. ex: make uninstall pkg=package_
 	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry remove $(pkg)
 	$(MAKE) build
 
-.PHONY: prepare-image-rc
-prepare-image-rc:  ## Prepare the image for release.
-	@echo "Preparing the image for release candidate - $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)"
+.PHONY: publish-image-rc
+publish-image-rc: ## Push the release candidate to the registry.
+	@echo "Publishing the image as release candidate -  $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)"
 	docker tag $(REPOSITORY):$(IMAGE_TAG) $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
-
-.PHONY: push-image-rc
-push-image-rc: ## Push the release candidate
-	@echo "Pushing the release candidate -  $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)"
 	docker push $(REPOSITORY):$(IMAGE_TAG)-rc$(NEXT_RC)
 
-.PHONY: publish-release
-publish-release: ## Publish the releasea to PROD as latest
-	@echo "Publishing the release to PROD - $(REPOSITORY):latest"
+.PHONY: publish-image-latest
+publish-image-latest:  ## Publish the latest release to the registry.
+	@echo "Publishing the latest image as latest- $(REPOSITORY):$(LATEST_TAG) as latest"
 	docker pull $(REPOSITORY):$(LATEST_TAG)
 	docker tag $(REPOSITORY):$(LATEST_TAG) $(REPOSITORY):latest
 	docker push $(REPOSITORY):latest
@@ -95,12 +103,12 @@ test-unit:  ## Run the unit tests.
 	@echo "Running the unit tests."
 	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry run pytest -n 4 tests/unit -ra 
 
-.PHONY: test-integration
-test-integration:  ## Run the integration tests.
-	@echo "Running the integration tests."
-	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry run pytest -n 4 tests/integration -ra
-
 .PHONY: test-acceptance
 test-acceptance:  ## Run the acceptance tests.
 	@echo "Running the acceptance tests."
 	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry run pytest -n 4 tests/acceptance -ra
+	
+.PHONY: test-integration
+test-integration:  ## Run the integration tests.
+	@echo "Running the integration tests."
+	docker-compose -f $(CONTAINER_NAME)/docker-compose.yml run --rm $(CONTAINER_NAME) poetry run pytest -n 4 tests/integration -ra
