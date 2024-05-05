@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:  
       - name: Check out the repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
       - name: Build the Docker image
         run: make build
       - name: Run pre-commit check
