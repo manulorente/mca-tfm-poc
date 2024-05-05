@@ -34,6 +34,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }} 
+      - name: Build the Docker image
+        run: make build          
       - name: Publish the release candidate
         if: github.event_name == 'pull_request'
         run: make publish-image-rc
