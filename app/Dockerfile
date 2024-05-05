@@ -11,9 +11,9 @@ RUN apk add --no-cache bash && \
 
 # Copy the dependency files and install dependencies in one step
 COPY pyproject.toml /src/
-RUN poetry install --no-interaction --no-ansi
+RUN poetry install --no-root --no-interaction --no-ansi
 
-# Copy the FastAPI project source code into the container
+# Copy the rest of the source code into the container
 COPY . /src
 
 # Define environment variables
@@ -25,4 +25,4 @@ ENV APP_MODULE=${APP_MODULE}
 EXPOSE ${APP_PORT}
 
 # Use a single CMD instruction
-CMD ["sh", "-c", "poetry run uvicorn $APP_MODULE --reload --host $APP_HOST --port $APP_PORT"]
+CMD ["poetry run uvicorn $APP_MODULE --reload --host $APP_HOST --port $APP_PORT"]

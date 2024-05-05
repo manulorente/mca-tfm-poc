@@ -16,18 +16,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@main
       - name: Build the Docker image
         run: make build
       - name: Run integration tests
         run: make test-integration    
   publish-image-rc:
-    name: Publish image
+    name: Publish release candidate
     needs: integration-tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@main
+      - name: Build the Docker image
+        run: make build
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -36,12 +38,12 @@ jobs:
       - name: Publish the release candidate
         run: make publish-image-rc      
   publish-image-latest:
-    name: Publish image
+    name: Publish latest release
     needs: publish-image-rc
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@main
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
