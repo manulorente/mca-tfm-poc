@@ -9,26 +9,17 @@ on:
       - '.gitignore'
       
 jobs:
-  checkstyle:
-    name: Check the code style
+  build-and-test:
+    name: Build, checkstyle and run unit and acceptance tests
     runs-on: ubuntu-latest
     steps:  
       - name: Check out the repository
-        uses: actions/checkout@main    
+        uses: actions/checkout@main
       - name: Build the Docker image
         run: make build
-      - name: Run checkstyle
+      - name: Run pre-commit check
         run: make pre-commit
-  tests:
-    name: Run unit and acceptance tests
-    needs: checkstyle
-    runs-on: ubuntu-latest
-    steps:       
-      - name: Check out the repository
-        uses: actions/checkout@main     
-      - name: Build the Docker image
-        run: make build
       - name: Run unit tests
         run: make test-unit
       - name: Run acceptance tests
-        run: make test-acceptance   
+        run: make test-acceptance

@@ -17,11 +17,7 @@ services:
       - ${APP_PORT}:${CONTAINER_PORT}
     env_file:
       - .env
-
-  volumes:
-    src_volume:
-  
-  environment:
-    APP_PORT: ${APP_PORT}
-    APP_HOST: ${APP_HOST}
-    APP_MODULE: ${APP_MODULE}
+    environment:
+      - APP_PORT=${APP_PORT}
+      - APP_HOST=${APP_HOST}
+      - APP_MODULE=${APP_MODULE}

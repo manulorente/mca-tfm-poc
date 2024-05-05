@@ -9,6 +9,7 @@ on:
       - 'README.md'
       - 'LICENSE'
       - '.gitignore'
+      - 'app/.dockerignore'
   
 jobs:
   integration-tests:
@@ -21,33 +22,21 @@ jobs:
         run: make build
       - name: Run integration tests
         run: make test-integration    
-  publish-image-rc:
-    name: Publish release candidate
+  publish-image:
+    name: Publish Docker image
     needs: integration-tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
         uses: actions/checkout@main
-      - name: Build the Docker image
-        run: make build
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }} 
       - name: Publish the release candidate
-        run: make publish-image-rc      
-  publish-image-latest:
-    name: Publish latest release
-    needs: publish-image-rc
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@main
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }} 
+        if: github.event_name == 'pull_request'
+        run: make publish-image-rc
       - name: Publish the latest release
-        run: make publish-image-latest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: make publish-image-latest    
