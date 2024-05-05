@@ -43,7 +43,7 @@ The project uses [Makefiles](https://www.gnu.org/software/make/manual/html_node/
 
 This project uses [Poetry](https://python-poetry.org) as the package manager.
 
-To run poetry need the `pyproject.toml` and then run `make poetry-init` to install the dependencies.
+To run poetry need the `pyproject.toml` created first and then run `make poetry-init` to install the dependencies.
 
 ### Testing
 
