@@ -3,7 +3,7 @@ name: CI-PRO
 on:
   pull_request:
     branches:
-    - main
+      - main
     paths-ignore:
       - 'docs/**'
       - 'README.md'
@@ -21,7 +21,15 @@ jobs:
       - name: Build the Docker image
         run: make build
       - name: Run integration tests
-        run: make test-integration    
+        run: make test-integration
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}         
+      - name: Publish the release candidate Docker image
+        if: success()
+        run: make publish-image-rc      
   publish-image:
     name: Publish Docker image
     needs: integration-tests
@@ -34,11 +42,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }} 
-      - name: Build the Docker image
-        run: make build          
-      - name: Publish the release candidate
-        if: github.event_name == 'pull_request'
-        run: make publish-image-rc
-      - name: Publish the latest release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Publish the latest Docker image
+        if: github.event_name == 'pull_request' && github.ref == 'refs/heads/main'
         run: make publish-image-latest    
